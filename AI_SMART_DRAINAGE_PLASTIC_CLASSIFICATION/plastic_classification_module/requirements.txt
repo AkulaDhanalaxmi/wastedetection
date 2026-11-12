@@ -1,0 +1,13 @@
+numpy>=1.24
+Pillow>=10.0
+PyYAML>=6.0
+# training (Colab has these preinstalled); not needed for ONNX inference
+torch>=2.1
+torchvision>=0.16
+# inference on a normal laptop without torch (after --export-onnx)
+onnxruntime>=1.16
+# only for scripts/annotate_cli.py (needs a display)
+opencv-python>=4.8
+# optional: Roboflow audit download
+# roboflow
+pytest>=7.0

@@ -1,0 +1,33 @@
+model: {arch: mobilenet_v3_small, img_size: 224, pretrained: true}   # alternatives: mobilenet_v3_large, efficientnet_b0
+train:
+  epochs: 25
+  batch_size: 32
+  lr_head: 0.001
+  lr_backbone: 0.0001
+  weight_decay: 0.0001
+  freeze_backbone_epochs: 3
+  label_smoothing: 0.1
+  patience: 6
+  num_workers: 2
+  seed: 42
+  class_weighting: true
+  amp: true
+augment:             # applied to TRAIN only, after splitting (never before)
+  hflip: 0.5
+  rotate_deg: 15
+  translate: 0.08
+  scale: [0.85, 1.15]
+  brightness: 0.25
+  contrast: 0.25
+  saturation: 0.2
+  hue: 0.02          # kept tiny: colour can be a material cue
+  blur_p: 0.2
+  erasing_p: 0.15
+calibration: {target_accepted_accuracy: 0.95, min_coverage: 0.5}
+inference:
+  weights: runs/plastic/default/best.pt   # or a .onnx file (needs onnxruntime only)
+  default_threshold: 0.85                 # used when no val-derived threshold exists
+  thresholds: {recyclable: null, non_recyclable: null}   # null -> checkpoint suggestion -> default
+  min_crop_side: 32
+  min_laplacian_var: 0.0                  # 0 = blur gate off; tune on real crops before enabling
+  device: cpu

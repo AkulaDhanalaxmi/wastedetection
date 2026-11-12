@@ -1,0 +1,16 @@
+paths:
+  images_dir: data/plastic_crops          # crops (labelled + unlabelled) live here
+  to_label_csv: data/annotations/to_label.csv
+  labels_csv: data/annotations/labels.csv # one row per labelled crop (schema in docs/ANNOTATION_GUIDE.md)
+  processed_dir: data/plastic_split       # output: train|val|test/<class>/ + _uncertain + _audit
+  reports_dir: reports
+  policy: config/recyclability_policy.yaml
+classes: [non_recyclable, recyclable]     # model output order (alphabetical = folder order)
+# Which label_basis values exist / may enter train/val/test. community_unverified goes to _audit only.
+label_bases: [resin_policy, human_visual_rule, human_two_annotator_agree, community_unverified]
+trusted_bases: [resin_policy, human_visual_rule, human_two_annotator_agree]
+split: {train: 0.70, val: 0.15, test: 0.15, seed: 42}
+dedupe: {hash_size: 8, max_hamming: 4}    # near-duplicate clusters are never split across train/val/test
+preprocess: {max_side: 384, min_side: 32, jpeg_quality: 95}
+warn_min_per_class_per_split: {train: 100, val: 30, test: 30}
+crops: {plastic_class_id: 0, pad_fraction: 0.10, min_box_px: 24}

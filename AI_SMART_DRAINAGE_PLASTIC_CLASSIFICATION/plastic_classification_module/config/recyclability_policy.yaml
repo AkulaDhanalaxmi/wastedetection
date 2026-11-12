@@ -1,0 +1,22 @@
+# Recyclability POLICY used to turn evidence (resin code, contamination, item type) into a label.
+# !! These are conservative DEFAULTS chosen for this project, NOT an authoritative regulation. !!
+# Recyclability depends on your local collection scheme and recycler. Confirm with them and edit.
+policy_name: default_conservative_v1
+resin_codes:            # used ONLY when the resin code is actually known (printed code / dataset metadata)
+  PET:   {code: 1, label: recyclable}
+  HDPE:  {code: 2, label: recyclable}
+  PVC:   {code: 3, label: non_recyclable}
+  LDPE:  {code: 4, label: uncertain}      # films/bags: accepted only by some drop-off schemes
+  PP:    {code: 5, label: uncertain}      # accepted by many but not all recyclers; edit if yours accepts it
+  PS:    {code: 6, label: non_recyclable} # foam / rigid PS rarely accepted
+  OTHER: {code: 7, label: uncertain}
+contamination_levels: [none, light, heavy, unknown]
+rules:                  # human annotators must cite one rule_id per labelled row
+  - {id: R1_clean_pet_hdpe,       label: recyclable,     description: "Rigid PET/HDPE item (bottle, jar, jug), resin known or unambiguous, contamination none/light."}
+  - {id: NR1_ps_or_pvc,           label: non_recyclable, description: "Resin code 3 or 6 visible, or clearly polystyrene foam/rigid PS."}
+  - {id: NR2_heavy_contamination, label: non_recyclable, description: "Heavily soiled (food, oil, sludge, mud-caked). Overrides R1."}
+  - {id: NR3_multilayer_sachet,   label: non_recyclable, description: "Metallised multilayer sachet/chip packet/laminate that is not accepted locally."}
+  - {id: U1_unknown_material,     label: uncertain,      description: "Material or resin cannot be determined from the image."}
+  - {id: U2_occluded_or_blurry,   label: uncertain,      description: "Item partly hidden, blurry, tiny, or crushed beyond recognition."}
+  - {id: U3_film_or_bag,          label: uncertain,      description: "Thin film / carrier bag: depends on local drop-off schemes."}
+  - {id: U4_pp_or_conditional,    label: uncertain,      description: "PP or other conditionally accepted plastic."}

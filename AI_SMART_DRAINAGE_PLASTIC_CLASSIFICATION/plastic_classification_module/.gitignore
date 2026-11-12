@@ -1,0 +1,4 @@
+data/
+runs/
+reports/*.json
+__pycache__/
