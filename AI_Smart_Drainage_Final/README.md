@@ -3,9 +3,11 @@
 A compact local Flask app that uses the included YOLO11 checkpoint to detect
 Plastic, Organic, and Metal from a browser webcam. The dashboard sends webcam
 frames to the local Flask backend continuously while the camera is running.
-Plastic crops are sent to local Ollama/Qwen2.5-VL for recyclable/non-recyclable
-classification. Uncertain results remain manual review; unsupported labels are
-rejected.
+Plastic crops are first checked by the optional trained custom classifier from
+`plastic_classification_module`. If its weights are not present or it abstains
+at its configured confidence threshold, the existing local Ollama/Qwen2.5-VL
+classifier is used as a fallback. Uncertain results remain manual review;
+unsupported labels are rejected.
 
 ## Run on Windows
 
@@ -29,9 +31,19 @@ it is not needed for live detection.
 - The included YOLO checkpoint contains exactly three classes: `Plastic`,
   `Metal`, and `Organic`. It identifies the material category, not specific
   product names such as bottle, can, or food wrapper.
-- Plastic recyclability is a separate visual judgment from local Qwen2.5-VL.
-  The prompt only permits a recyclability label when visible cues are clear;
-  ambiguous crops, failures, and unsupported responses stay in manual review.
+- Plastic recyclability is a separate visual judgment. When a trained custom
+  model is available, its calibrated confidence threshold is honored; low
+  confidence, missing weights, or model load failures use local Qwen2.5-VL.
+  Ambiguous crops, failures, and unsupported responses stay in manual review.
+- The custom model is optional. Its default checkpoint is
+  `../AI_SMART_DRAINAGE_PLASTIC_CLASSIFICATION/plastic_classification_module/runs/plastic/default/best.pt`;
+  until that checkpoint exists, the current Qwen workflow continues unchanged.
+  Override the module or checkpoint location with the optional
+  `SMART_DRAINAGE_PLASTIC_MODULE_PATH` and
+  `SMART_DRAINAGE_PLASTIC_MODEL_PATH` settings.
+- To run a trained PyTorch checkpoint, install the plastic module's
+  `requirements.txt` into the app's Python environment. This keeps the large
+  PyTorch dependencies optional for users who have not trained the classifier.
 - Qwen's displayed confidence is model-reported and is not calibrated to
   real-world accuracy. Appearance alone cannot confirm resin type, contamination
   hidden from view, or local recycling rules. Treat the result as guidance, not
@@ -46,7 +58,9 @@ it is not needed for live detection.
 ## Memory behavior
 
 - One CPU YOLO model is loaded lazily and reused.
-- The single Qwen worker starts only when a Plastic crop needs classification.
+- The custom plastic model loads only when its trained checkpoint exists.
+- Custom-model weights are released before a Qwen fallback is requested.
+- The single Qwen worker starts only when a Plastic crop needs fallback classification.
 - Plastic crops and incoming images are resized before downstream processing.
 - At most four small crops wait in the classification queue; excess items are
   reported for manual review rather than retaining unbounded image data.

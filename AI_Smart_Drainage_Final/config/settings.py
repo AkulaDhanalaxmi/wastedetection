@@ -11,6 +11,26 @@ load_dotenv(ROOT / ".env")
 MODEL_PATH = Path(os.getenv("SMART_DRAINAGE_MODEL_PATH", str(ROOT / "models" / "best.pt"))
                   ).expanduser().resolve()
 
+_plastic_module_candidates = (
+    ROOT / "plastic_classification_module",
+    ROOT.parent
+    / "AI_SMART_DRAINAGE_PLASTIC_CLASSIFICATION"
+    / "plastic_classification_module",
+)
+_default_plastic_module_root = next(
+    (path for path in _plastic_module_candidates if path.is_dir()),
+    _plastic_module_candidates[0],
+)
+PLASTIC_MODULE_ROOT = Path(
+    os.getenv("SMART_DRAINAGE_PLASTIC_MODULE_PATH", str(_default_plastic_module_root))
+).expanduser().resolve()
+CUSTOM_PLASTIC_MODEL_PATH = Path(
+    os.getenv(
+        "SMART_DRAINAGE_PLASTIC_MODEL_PATH",
+        str(PLASTIC_MODULE_ROOT / "runs" / "plastic" / "default" / "best.pt"),
+    )
+).expanduser().resolve()
+
 DETECTION_CONFIDENCE = float(os.getenv("SMART_DRAINAGE_DETECTION_CONFIDENCE", "0.35"))
 YOLO_IMAGE_SIZE = int(os.getenv("SMART_DRAINAGE_YOLO_IMAGE_SIZE", "640"))
 TRACKER_CONFIG = os.getenv("SMART_DRAINAGE_TRACKER", "bytetrack.yaml")

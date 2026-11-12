@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 from flask import Flask, jsonify, render_template, request
 
+from app.classification import Prediction
 from app.counts import SessionCounts
 from app.detector import RawDetection, WasteDetector
 from config.settings import MAX_INPUT_IMAGE_SIDE, MAX_UPLOAD_BYTES
@@ -31,7 +32,15 @@ def create_app(
     latest_detections: list[dict] = []
     camera_active = False
     camera_session = uuid.uuid4().hex
-    worker = worker or PlasticWorker(counts.apply_prediction)
+
+    def update_classification_result(
+        key: str,
+        prediction: Prediction | None,
+        error_message: str | None,
+    ) -> None:
+        counts.apply_prediction(key, prediction, error_message)
+
+    worker = worker or PlasticWorker(update_classification_result)
     app.extensions["waste_detector"] = detector
     app.extensions["waste_counts"] = counts
     app.extensions["plastic_worker"] = worker
@@ -221,7 +230,10 @@ def _annotate(frame: np.ndarray, detections: list[dict]) -> np.ndarray:
         label = f'{item["material"]} | {item["category"]}'
         label += f' | det {item["detection_confidence"]:.2f}'
         if item["classification_confidence"] is not None:
-            label += f' | Qwen {item["classification_confidence"]:.2f}'
+            label += (
+                f' | {item.get("classification_source") or "Qwen"} '
+                f'{item["classification_confidence"]:.2f}'
+            )
         cv2.rectangle(image, (x1, y1), (x2, y2), color, 2)
         cv2.putText(
             image,

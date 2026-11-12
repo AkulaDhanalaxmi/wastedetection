@@ -16,6 +16,7 @@ class WasteItem:
     reason: str
     classification_confidence: float | None = None
     inference_seconds: float | None = None
+    classification_source: str | None = None
     classification_state: str = "not_requested"
 
 
@@ -85,6 +86,11 @@ class SessionCounts:
                 return False
             item.inference_seconds = prediction.inference_seconds if prediction else None
             item.classification_confidence = prediction.confidence if prediction else None
+            item.classification_source = (
+                "Custom" if prediction and prediction.source == "custom_model"
+                else "Qwen" if prediction
+                else None
+            )
             if error_message:
                 item.classification_state = "failed"
                 item.category = "PLASTIC_MANUAL_REVIEW"
@@ -160,6 +166,7 @@ class SessionCounts:
             "detection_confidence": item.detection_confidence,
             "classification_confidence": item.classification_confidence,
             "classification_inference_seconds": item.inference_seconds,
+            "classification_source": item.classification_source,
             "reason": item.reason,
             "classification_state": item.classification_state,
         }

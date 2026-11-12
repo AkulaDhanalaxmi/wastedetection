@@ -41,6 +41,8 @@ class Prediction:
     reason: str
     confidence: float | None
     inference_seconds: float
+    source: str = "qwen"
+    error_code: str | None = None
 
 
 class OllamaPlasticClassifier:
